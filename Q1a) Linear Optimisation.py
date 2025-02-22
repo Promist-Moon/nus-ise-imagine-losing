@@ -18,8 +18,9 @@ def main():
         quarter = get_quarter_details(tam_list, node_1_yield, node_2_yield, node_3_yield, i)
         c = [-100 * quarter[1], -150 * quarter[2], -270 * quarter[3]]
 
-        # Constraints (Ax <= b)
-        # -100(0.98)(x) - 150(0.82)(y) - 270(0.25)(z) <= 10^6 * tam / 13
+        # General Formula: GBpW * yield * x + GBpW * yield * y + GBpW * yield * z <= 10**6 * TAM / 13
+
+        # Q2'26: 100(0.98)(x) + 150(0.82)(y) + 270(0.25)(z) <= 10**6 * 27.4 / 13
         A = [[100 * quarter[1], 150 * quarter[2], 270 * quarter[3]],
              [0, 0, 0],
              ]

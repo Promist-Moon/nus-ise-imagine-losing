@@ -46,7 +46,7 @@ def main():
     df = pd.DataFrame(ans)
 
     # Save to a CSV file
-    df.to_csv("Calculated values.csv", index=False, header=["Node1", "Node2", "Node3", "difference"])
+    df.to_csv("Q1a calculated values.csv", index=False, header=["Node1", "Node2", "Node3", "difference"])
 
 if __name__ == "__main__":
     main()

@@ -8,6 +8,7 @@ node_1_yield = [0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98]
 node_2_yield = [0.82, 0.95, 0.98, 0.98, 0.98, 0.98, 0.98]
 node_3_yield = [0.25, 0.35, 0.50, 0.65, 0.85, 0.95, 0.98]
 
+# get_quarter_details retrieves the TAM and yield values for the current quarter.
 def get_quarter_details(tam_list, node_1_yield, node_2_yield, node_3_yield, count):
     return [tam_list[count], node_1_yield[count], node_2_yield[count], node_3_yield[count]]
 
@@ -26,10 +27,12 @@ def main():
              ]
         b = [quarter[0] * pow(10, 6) / 13, 0]
 
+        # Constraint 4
         bounds_curr = [(max(0, initial_values[0] - 2500), initial_values[0] + 2500),
                        (max(0, initial_values[1] - 2500), initial_values[1] + 2500),
                        (max(0, initial_values[2] - 2500), initial_values[2] + 2500)]
 
+        #Solve the LP equation
         result = linprog(c, A_ub=A, b_ub=b, bounds=bounds_curr, method='highs')
 
         if result.success:

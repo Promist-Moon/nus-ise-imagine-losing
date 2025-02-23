@@ -7,16 +7,16 @@ import pandas as pd
 # select a row of loading data
 def get_weekly_loading(loading_data: pd.DataFrame, 
                        quarter: int,
-                       weeks: int=13) -> list:
-    
-    return (loading_data.iloc[quarter] / weeks).to_list()
+                       tool_name: str) -> float:
+
+    return loading_data.iloc[quarter].loc[tool_name]
 
 
 # randomly select a row of rpt data
-def random_weekly_rpt(rpt_data: pd.DataFrame) -> list:
-
-    row = rpt_data.sample(n=1)
-    return row.iloc[0].to_list()
+def random_weekly_rpt(rpt_data: pd.DataFrame,
+                      tool_name: str) -> float:
+    
+    return rpt_data.sample(n=1).iloc[0].loc[tool_name]
 
 
 # default utilisation data

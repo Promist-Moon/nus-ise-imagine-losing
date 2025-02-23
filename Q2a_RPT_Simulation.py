@@ -4,20 +4,19 @@ from getdata import *
 
 ## SIMULATORS
 
-# check if weekly rpt makes (tool requirement < tool count)
+# check if (tool requirement < tool count) is satisfied given a certain weekly rpt
 def sufficient_tools(
         weekly_loading: list,
         weekly_rpt: list, 
         utilisation: float, 
         tool_count: int
         ):
-    
-    if len(weekly_loading) != len(weekly_rpt):
-        raise ValueError('Loading count does not match RPT value count')
 
     working_time = sum([load * rpt for load, rpt in zip(weekly_loading, weekly_rpt)])
+    tool_requirement = working_time / (7 * 24 * 60 * utilisation)
+    criteria = tool_requirement < tool_count
 
-    criteria = working_time / (7 * 24 * 60 * utilisation) < tool_count
+    print(f'{working_time=}, {tool_requirement=}, {tool_count=}, {criteria=}')
 
     if criteria:
         return True
@@ -25,28 +24,44 @@ def sufficient_tools(
     return False
 
 
-# simulate n number of weeks and calculate weekly success probability
-def simulate_week(rpt_data: pd.DataFrame, 
-                  loading_data: pd.DataFrame, 
-                  utilisation_data: dict,
-                  tool_count_data: pd.DataFrame,
-                  tool_name: str,
-                  quarter: int,
-                  n: int):  # number of simulations
+# simulate success rate of a tool in a given quarter
+def simulate_quarter(
+        rpt_data: pd.DataFrame, 
+        loading_data: pd.DataFrame, 
+        utilisation_data: dict,
+        tool_count_data: pd.DataFrame,
+        quarter: int,
+        tool_list: list,  # list of tools to be simulated
+        weeks: int=13  # number of simulations, set to 13 weeks by default
+        ) -> dict:
     
-    weekly_success = 0
-    weekly_loading = get_weekly_loading(loading_data, quarter)
+    result = {}
 
-    for i in range(n):
-        if sufficient_tools(weekly_loading=weekly_loading, 
-                            weekly_rpt=random_weekly_rpt(rpt_data),
-                            utilisation=utilisation_data,
-                            tool_count=get_tool_count(tool_count_data=tool_count_data,
-                                                      tool_name=tool_name,
-                                                      quarter=quarter)):
-            weekly_success += 1
-        
-    success_rate = weekly_success / n
+    # data collection
+    for tool_name in tool_list:
+        weekly_loading = get_weekly_loading(loading_data=loading_data, 
+                                            quarter=quarter)
+        tool_utilisation = get_utilisation(utilisation_data=utilisation_data, 
+                                           tool_name=tool_name)
+        tool_count = get_tool_count(tool_count_data=tool_count_data,
+                                    quarter=quarter,
+                                    tool_name=tool_name)
+
+        # simulation
+        success_count = 0
+
+        for i in range(weeks):
+            if sufficient_tools(weekly_loading=weekly_loading, 
+                                weekly_rpt=random_weekly_rpt(rpt_data),
+                                utilisation=tool_utilisation,
+                                tool_count=tool_count):
+                success_count += 1
+
+        success_rate = success_count / weeks
+
+        result[tool_name] = success_rate
+    
+    return result
     
 
 
@@ -68,6 +83,7 @@ def main():
     rpt_df = pd.read_csv("rpt.csv")
     node_loading_df = pd.read_csv("Q1a calculated values.csv")
     tool_count_df = pd.read_csv("tool_requirement.csv")
+    utilisation = get_default_utilisation()
 
     # df pre-processing
     tool_loading_df = node_loading_df.set_axis(
@@ -75,20 +91,16 @@ def main():
         axis=1
         )
 
-    return
 
-    # default data
-    default_utilisation = {
-        'H': 0.85,
-        'I': 0.75,
-        'J': 0.60
-    }
-
-    sim = simulate_week(rpt_data=rpt_df, 
-                        loading_data=loading_df, 
-                        utilisation_data=default_utilisation,
-                        tool_count_data=tool_count_df,
-                        n=10)
+    sim = simulate_quarter(
+        rpt_data=rpt_df, 
+        loading_data=tool_loading_df,
+        utilisation_data=utilisation,
+        tool_count_data=tool_count_df,
+        quarter=0,
+        tool_list=['H', 'I', 'J']
+        )
+    
     print(sim)
 
     return 0

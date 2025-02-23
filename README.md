@@ -14,3 +14,7 @@ To get started with this project, please follow the steps below:
     ```bash
     cd nus-ise-imagine-losing
     ```
+
+## Q1a
+Q1a) Linear Optimisation.py uses numpy, scipy, and pandas to extract a Loading Profile for each quarter.
+Q1a) calculated values.csv are the results of the data frame in Q1a) Linear Optimisation.py copied into a csv file.

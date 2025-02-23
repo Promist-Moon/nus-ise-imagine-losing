@@ -1,20 +1,20 @@
 import pandas as pd
+import numpy as np
 from getdata import *
 
 
 ## SIMULATORS
 
 # check if (tool requirement < tool count) is satisfied given a certain weekly rpt
-def sufficient_tools(
-        weekly_loading: float,
-        weekly_rpt: float, 
+def insufficient_tools(
+        weekly_tooltime: float,
         utilisation: float, 
         tool_count: int
         ):
 
-    tool_requirement = weekly_loading * weekly_rpt / (7 * 24 * 60 * utilisation)
-    criteria = tool_requirement <= tool_count
-    # print(f'{working_time=}, {tool_requirement=}, {tool_count=}, {criteria=}')
+    tool_requirement = weekly_tooltime / (7 * 24 * 60 * utilisation)
+    criteria = tool_requirement > tool_count
+    # print(f'{weekly_tooltime=}, {tool_requirement=}, {tool_count=}, {criteria=}')
 
     if criteria:
         return True
@@ -49,29 +49,46 @@ def simulate_quarter(
         return weekly_loading, tool_utilisation, tool_count
 
 
-    def sim_quarterly() -> bool:
+    def sim_quarterly(weekly_loading: float, 
+                      tool_utilisation: float, 
+                      tool_count: int) -> bool:
         for i in range(weeks):
-            if not sufficient_tools(weekly_loading=weekly_loading, 
-                                weekly_rpt=random_weekly_rpt(rpt_data=rpt_data,
-                                                            tool_name=tool_name),
-                                utilisation=tool_utilisation,
-                                tool_count=tool_count):
-                return False
+            weekly_tooltime = weekly_loading * random_weekly_rpt(
+                rpt_data=rpt_data,
+                tool_name=tool_name,
+                loading=int(weekly_loading)
+                )
+            
+            if insufficient_tools(
+                weekly_tooltime=weekly_tooltime, 
+                utilisation=tool_utilisation,
+                tool_count=tool_count):
+                return True
             else:
                 pass
-        return True
+        
+        return False
 
 
-    def sim_weekly() -> float:
-        success_count = 0
+    def sim_weekly(weekly_loading: float, 
+                   tool_utilisation: float, 
+                   tool_count: int) -> float:
+        fail_count = 0
         for i in range(weeks):
-            if sufficient_tools(weekly_loading=weekly_loading, 
-                                weekly_rpt=random_weekly_rpt(rpt_data=rpt_data,
-                                                            tool_name=tool_name),
-                                utilisation=tool_utilisation,
-                                tool_count=tool_count):
-                success_count += 1
-        return success_count / weeks
+            weekly_tooltime = weekly_loading * random_weekly_rpt(
+                rpt_data=rpt_data,
+                tool_name=tool_name,
+                loading=int(weekly_loading)
+                )
+            
+            if insufficient_tools(
+                weekly_tooltime=weekly_tooltime, 
+                utilisation=tool_utilisation,
+                tool_count=tool_count
+                ):
+                fail_count += 1
+        
+        return fail_count / weeks
 
 
     # simulation (iterating through list of tools)
@@ -81,9 +98,13 @@ def simulate_quarter(
         weekly_loading, tool_utilisation, tool_count = collect_data(tool_name)
 
         if mode == 'quarter':
-            sim_output = sim_quarterly()
+            sim_output = sim_quarterly(weekly_loading=weekly_loading, 
+                                       tool_utilisation=tool_utilisation, 
+                                       tool_count=tool_count)
         elif mode == 'week':
-            sim_output = sim_weekly()
+            sim_output = sim_weekly(weekly_loading=weekly_loading, 
+                                    tool_utilisation=tool_utilisation, 
+                                    tool_count=tool_count)
         
         result[tool_name] = sim_output
     
@@ -141,13 +162,30 @@ def main():
         axis=1
         )
 
+
+    # distribution of RPT mean
+    # def sample_rpt(tool_name: str) -> list:
+    #     return [random_weekly_rpt(
+    #         rpt_df, tool_name, int(get_weekly_loading(tool_loading_df, 0, 'H'))
+    #     ) for i in range(100000)]
+    
+
+    # rpt_samples = pd.DataFrame(
+    #     {'H': sample_rpt('H'),
+    #      'I': sample_rpt('I'),
+    #      'J': sample_rpt('J')}
+    #      )
+    
+    # rpt_samples.to_csv("rpt_samples.csv")
+
+
     # simulation
     sim = simulate_all(
         rpt_data=rpt_df, 
         loading_data=tool_loading_df,
         utilisation_data=utilisation,
         tool_count_data=tool_count_df,
-        cycles=10000,
+        cycles=1000,
         quarters=8,
         tool_list=['H', 'I', 'J'],
         mode='quarter')

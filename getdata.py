@@ -14,9 +14,10 @@ def get_weekly_loading(loading_data: pd.DataFrame,
 
 # randomly select a row of rpt data
 def random_weekly_rpt(rpt_data: pd.DataFrame,
-                      tool_name: str) -> float:
-    
-    return rpt_data.sample(n=1).iloc[0].loc[tool_name]
+                      tool_name: str,
+                      loading: int) -> float:
+    rpt_sample = rpt_data.sample(n=loading, replace=True).mean()
+    return rpt_sample.loc[tool_name]
 
 
 # default utilisation data

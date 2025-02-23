@@ -18,3 +18,8 @@ To get started with this project, please follow the steps below:
 ## Q1a
 Q1a) Linear Optimisation.py uses numpy, scipy, and pandas to extract a Loading Profile for each quarter.
 Q1a) calculated values.csv are the results of the data frame in Q1a) Linear Optimisation.py copied into a csv file.
+
+## Q1b
+
+## Q2a
+Q2a_RPT_Simulation.py simulates the tool requirements using samples of the mean RPT of workstation H, I, and J respectively.
